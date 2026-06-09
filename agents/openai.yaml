@@ -1,0 +1,6 @@
+interface:
+  display_name: "Who Am I"
+  short_description: "Build personal sites with projects, skills, and style"
+  default_prompt: "Use $who-am-i to turn my Personal Portfolio materials into a polished website with project modules, skill modules, assets, copy, and visual style direction."
+policy:
+  allow_implicit_invocation: true

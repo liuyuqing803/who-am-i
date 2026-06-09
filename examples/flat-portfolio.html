@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>李明 · Li Ming — AI Builder</title>
+<meta name="description" content="李明 / Li Ming — AI Builder。把 AI 跑进真实业务现场：Agent 架构、Workflow 编排、评测治理与人机协同。" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23F0997B'/%3E%3Ccircle cx='16' cy='13' r='6' fill='%23fff'/%3E%3Crect x='8' y='21' width='16' height='7' rx='3.5' fill='%23fff'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --coral: #FAECE7;
+    --coral-deep: #F0997B;
+    --sky-blue: #E6F1FB;
+    --sky-blue-deep: #85B7EB;
+    --lavender: #EEEDFE;
+    --lavender-deep: #AFA9EC;
+    --mint: #E1F5EE;
+    --mint-deep: #5DCAA5;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --white: #ffffff;
+    --placeholder-bg: #f4f3f0;
+    --placeholder-border: #d6d4ca;
+    --maxw: 1240px;
+  }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+    color: var(--text-primary);
+    background: var(--white);
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* ---------- language toggle ---------- */
+  .zh, .en { display: none; }
+  body.lang-zh .zh { display: inline; }
+  body.lang-en .en { display: inline; }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; }
+
+  /* ---------- NAV ---------- */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 48px;
+    position: fixed; width: 100%; z-index: 100;
+    background: rgba(255,255,255,0.86);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+  nav .logo { font-size: 19px; font-weight: 600; letter-spacing: -0.4px; display: flex; align-items: baseline; gap: 8px; }
+  nav .logo span.sub { font-size: 12px; font-weight: 400; color: var(--text-secondary); letter-spacing: 0.5px; }
+  nav .nav-right { display: flex; align-items: center; gap: 36px; }
+  nav .nav-links { display: flex; gap: 30px; list-style: none; }
+  nav .nav-links a { color: var(--text-secondary); font-size: 14px; transition: color 0.25s ease; }
+  nav .nav-links a:hover { color: var(--text-primary); }
+  .langbtn {
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1.5px solid var(--text-primary); background: transparent; color: var(--text-primary);
+    padding: 7px 14px; border-radius: 100px; letter-spacing: 0.5px; transition: 0.2s;
+    white-space: nowrap;
+  }
+  .langbtn:hover { background: var(--text-primary); color: var(--white); }
+  .langbtn .on { font-weight: 700; }
+  .langbtn .off { opacity: 0.4; }
+  .menu-toggle { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-primary); }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1.05fr 0.95fr;
+    padding: 150px 48px 70px; align-items: center; gap: 50px;
+    position: relative; overflow: hidden;
+    max-width: var(--maxw); margin: 0 auto;
+  }
+  .hero::before {
+    content: ''; position: absolute; width: 520px; height: 520px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(250,236,231,0.7) 0%, transparent 70%);
+    top: -120px; right: 120px; pointer-events: none;
+  }
+  .hero::after {
+    content: ''; position: absolute; width: 360px; height: 360px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(230,241,251,0.6) 0%, transparent 70%);
+    bottom: -60px; left: -100px; pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 2; }
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+  .pill {
+    display: inline-block; font-size: 12px; font-weight: 500; letter-spacing: 0.6px;
+    padding: 6px 15px; border-radius: 100px;
+  }
+  .pill.coral { color: var(--coral-deep); background: var(--coral); }
+  .pill.blue { color: var(--sky-blue-deep); background: var(--sky-blue); }
+  .pill.lav { color: var(--lavender-deep); background: var(--lavender); }
+  .pill.mint { color: var(--mint-deep); background: var(--mint); }
+  .hero h1 {
+    font-size: clamp(30px, 4vw, 52px); font-weight: 300; line-height: 1.22;
+    letter-spacing: -1.2px; margin-bottom: 26px;
+  }
+  .hero h1 strong { font-weight: 600; }
+  .hero p.tagline {
+    font-size: 17px; color: var(--text-secondary); max-width: 480px;
+    line-height: 1.85; margin-bottom: 38px;
+  }
+  .hero-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-block; padding: 14px 34px; background: var(--text-primary); color: var(--white);
+    border-radius: 100px; font-size: 14px; font-weight: 500; letter-spacing: 0.5px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+  .btn-primary:hover { transform: translateY(-2px); opacity: 0.88; }
+  .btn-ghost { font-size: 14px; font-weight: 500; color: var(--text-secondary); border-bottom: 1.5px solid transparent; padding-bottom: 2px; transition: 0.2s; }
+  .btn-ghost:hover { color: var(--text-primary); border-color: var(--coral-deep); }
+
+  .hero-visual { position: relative; z-index: 2; display: flex; justify-content: center; align-items: center; }
+  .illu { width: min(420px, 100%); height: auto; animation: float 6s ease-in-out infinite; }
+  .hero-visual .illu { filter: drop-shadow(0 30px 60px rgba(240,153,123,0.16)); }
+
+  @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-16px);} }
+  @keyframes float-slow { 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-12px) rotate(8deg);} }
+
+  .geo {
+    position: absolute; border-radius: 50%; border: 2px solid; opacity: 0.4; pointer-events: none;
+  }
+  .geo.g1 { width: 72px; height: 72px; border-color: var(--sky-blue-deep); top: 6%; right: 4%; animation: float-slow 8s ease-in-out infinite; }
+  .geo.g2 { width: 46px; height: 46px; border-color: var(--lavender-deep); top: 40%; left: 30%; animation: float-slow 7s ease-in-out infinite reverse; }
+  .geo.g3 { width: 96px; height: 96px; border-color: var(--coral-deep); bottom: 8%; right: 16%; animation: float-slow 9s ease-in-out infinite; }
+  .geo.g4 { width: 30px; height: 30px; border-color: var(--mint-deep); bottom: 26%; left: 18%; animation: float-slow 6s ease-in-out infinite; }
+
+  /* ---------- ABOUT ---------- */
+  .about {
+    display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 80px; align-items: center;
+    padding: 110px 48px; position: relative;
+    background: linear-gradient(180deg, var(--white) 0%, var(--sky-blue) 16%, var(--sky-blue) 84%, var(--white) 100%);
+  }
+  .about-visual { display: flex; justify-content: center; align-items: center; }
+  .about-visual .illu { width: min(360px, 100%); filter: drop-shadow(0 25px 50px rgba(133,183,235,0.22)); }
+  .about-content .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--sky-blue-deep); margin-bottom: 14px; }
+  .about-content h2 { font-size: clamp(26px,3.4vw,40px); font-weight: 300; letter-spacing: -0.8px; margin-bottom: 24px; line-height: 1.25; }
+  .about-content p { font-size: 16px; color: var(--text-secondary); line-height: 2; margin-bottom: 16px; max-width: 520px; }
+  .stats-row { display: flex; gap: 44px; margin-top: 40px; flex-wrap: wrap; }
+  .stat-num { font-size: 34px; font-weight: 600; letter-spacing: -1px; }
+  .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ---------- generic section ---------- */
+  section.block { padding: 110px 48px; }
+  section.block .inner { max-width: var(--maxw); margin: 0 auto; }
+  .section-header { text-align: center; max-width: 640px; margin: 0 auto 64px; }
+  .section-header .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--coral-deep); margin-bottom: 14px; }
+  .section-header h2 { font-size: clamp(26px,3.2vw,38px); font-weight: 300; letter-spacing: -0.8px; margin-bottom: 16px; }
+  .section-header p { font-size: 16px; color: var(--text-secondary); line-height: 1.8; }
+
+  /* ---------- SKILLS ---------- */
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 28px; }
+  .skill-card {
+    background: var(--white); border: 1px solid rgba(0,0,0,0.05); border-radius: 18px; padding: 32px 30px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .skill-card:hover { transform: translateY(-6px); box-shadow: 0 24px 50px rgba(0,0,0,0.06); }
+  .skill-ic { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+  .skill-card:nth-child(5n+1) .skill-ic { background: var(--coral); color: var(--coral-deep); }
+  .skill-card:nth-child(5n+2) .skill-ic { background: var(--sky-blue); color: var(--sky-blue-deep); }
+  .skill-card:nth-child(5n+3) .skill-ic { background: var(--lavender); color: var(--lavender-deep); }
+  .skill-card:nth-child(5n+4) .skill-ic { background: var(--mint); color: var(--mint-deep); }
+  .skill-card:nth-child(5n+5) .skill-ic { background: var(--coral); color: var(--coral-deep); }
+  .skill-card h3 { font-size: 19px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.3px; }
+  .skill-card p { font-size: 14.5px; color: var(--text-secondary); line-height: 1.8; }
+
+  /* ---------- PORTFOLIO / WORK ---------- */
+  .work-section { background: linear-gradient(180deg, var(--white) 0%, var(--coral) 30%, var(--coral) 70%, var(--white) 100%); }
+  .work-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 30px; }
+  .work-card { transition: transform 0.35s ease; }
+  .work-card:hover { transform: translateY(-6px); }
+  .work-ph {
+    width: 100%; aspect-ratio: 16/10; border-radius: 16px;
+    border: 2px dashed var(--placeholder-border); background: var(--white);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 20px; position: relative; overflow: hidden;
+  }
+  .work-ph::before { content: ''; position: absolute; inset: 0; opacity: 0.07; }
+  .work-card.coral .work-ph::before { background: repeating-linear-gradient(135deg, #F0997B 0, #F0997B 2px, transparent 2px, transparent 14px); }
+  .work-card.blue .work-ph::before { background: repeating-linear-gradient(135deg, #85B7EB 0, #85B7EB 2px, transparent 2px, transparent 14px); }
+  .work-card.lav .work-ph::before { background: repeating-linear-gradient(135deg, #AFA9EC 0, #AFA9EC 2px, transparent 2px, transparent 14px); }
+  .work-ic { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 23px; position: relative; z-index: 1; }
+  .work-card.coral .work-ic { background: var(--coral); color: var(--coral-deep); }
+  .work-card.blue .work-ic { background: var(--sky-blue); color: var(--sky-blue-deep); }
+  .work-card.lav .work-ic { background: var(--lavender); color: var(--lavender-deep); }
+  .work-ph .pht { font-size: 13px; color: var(--text-secondary); position: relative; z-index: 1; }
+  .work-ph .phs { font-size: 11px; color: #b4b2a9; position: relative; z-index: 1; }
+  .work-info h3 { font-size: 19px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.3px; }
+  .work-info p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+  .work-tags { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .work-tags .tag { font-size: 11.5px; padding: 4px 12px; border-radius: 100px; background: rgba(255,255,255,0.7); color: var(--text-secondary); font-weight: 500; }
+
+  /* ---------- EXPERIENCE ---------- */
+  .exp-section { background: linear-gradient(180deg, var(--white) 0%, var(--lavender) 30%, var(--lavender) 70%, var(--white) 100%); }
+  .exp-list { display: flex; flex-direction: column; gap: 26px; max-width: 900px; margin: 0 auto; }
+  .exp-card {
+    background: var(--white); border-radius: 18px; padding: 32px 34px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04);
+    display: grid; grid-template-columns: 8px 1fr; gap: 26px; align-items: start;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .exp-card:hover { transform: translateY(-4px); box-shadow: 0 22px 50px rgba(0,0,0,0.07); }
+  .exp-bar { width: 8px; align-self: stretch; border-radius: 100px; }
+  .exp-card:nth-child(4n+1) .exp-bar { background: var(--coral-deep); }
+  .exp-card:nth-child(4n+2) .exp-bar { background: var(--sky-blue-deep); }
+  .exp-card:nth-child(4n+3) .exp-bar { background: var(--lavender-deep); }
+  .exp-card:nth-child(4n+4) .exp-bar { background: var(--mint-deep); }
+  .exp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 6px; }
+  .exp-role { font-size: 19px; font-weight: 600; letter-spacing: -0.3px; }
+  .exp-co { font-size: 14px; color: var(--text-secondary); }
+  .exp-when { font-size: 13px; color: var(--text-secondary); margin-left: auto; font-variant-numeric: tabular-nums; }
+  .exp-impact { font-size: 15px; color: var(--text-primary); font-weight: 500; margin: 12px 0; line-height: 1.7; }
+  .exp-impact .hl { background: linear-gradient(transparent 60%, var(--coral) 60%); padding: 0 2px; }
+  .exp-desc { font-size: 14.5px; color: var(--text-secondary); line-height: 1.85; margin-bottom: 14px; }
+  .exp-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .exp-tags .tag { font-size: 11.5px; padding: 4px 12px; border-radius: 100px; background: #f5f5f3; color: var(--text-secondary); font-weight: 500; }
+
+  /* ---------- EDUCATION ---------- */
+  .edu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 24px; }
+  .edu-card { border-radius: 18px; padding: 30px; border: 1px solid rgba(0,0,0,0.05); }
+  .edu-card:nth-child(1) { background: var(--coral); }
+  .edu-card:nth-child(2) { background: var(--sky-blue); }
+  .edu-card:nth-child(3) { background: var(--mint); }
+  .edu-card h4 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .edu-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+  .edu-card .yr { font-size: 12.5px; font-weight: 600; color: var(--text-primary); margin-top: 14px; display: block; letter-spacing: 0.5px; }
+
+  /* ---------- CTA / CONTACT ---------- */
+  .cta-section { padding: 130px 48px; text-align: center; position: relative; overflow: hidden; }
+  .cta-section::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, var(--white) 0%, var(--mint) 32%, var(--mint) 68%, var(--white) 100%);
+    opacity: 0.6;
+  }
+  .cta-char { position: absolute; right: 7%; top: 50%; transform: translateY(-50%); width: 240px; opacity: 0.8; z-index: 1; }
+  .cta-content { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
+  .cta-content h2 { font-size: clamp(28px,3.6vw,44px); font-weight: 300; letter-spacing: -1px; margin-bottom: 20px; line-height: 1.25; }
+  .cta-content p { font-size: 17px; color: var(--text-secondary); margin-bottom: 34px; line-height: 1.85; }
+  .contact-methods { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; }
+  .cm {
+    display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+    padding: 14px 24px; border-radius: 100px; font-size: 14.5px; font-weight: 500;
+    border: 1.5px solid rgba(0,0,0,0.08); background: var(--white); color: var(--text-primary);
+    transition: transform 0.2s ease, box-shadow 0.2s ease; font-family: inherit;
+  }
+  .cm:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(0,0,0,0.08); }
+  .cm .ic { font-size: 17px; line-height: 1; }
+  .cm.email { background: var(--text-primary); color: var(--white); border-color: var(--text-primary); }
+  .cm.xhs { color: #ff2e4d; border-color: rgba(255,46,77,0.45); }
+  .cm.wechat { color: #1a998a; border-color: rgba(93,202,165,0.6); }
+  .copied { font-size: 13px; color: var(--mint-deep); margin-top: 18px; height: 18px; opacity: 0; transition: 0.25s; }
+  .copied.show { opacity: 1; }
+  .contact-note { font-size: 12px; color: #a8a8a8; margin-top: 8px; }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    padding: 36px 48px; border-top: 1px solid rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+    max-width: var(--maxw); margin: 0 auto;
+  }
+  footer p { font-size: 13px; color: var(--text-secondary); }
+  footer .footer-links { display: flex; gap: 26px; }
+  footer .footer-links a { font-size: 13px; color: var(--text-secondary); transition: 0.2s; }
+  footer .footer-links a:hover { color: var(--text-primary); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 920px) {
+    nav { padding: 18px 24px; }
+    .hero { grid-template-columns: 1fr; padding: 130px 24px 60px; text-align: center; }
+    .hero-tags, .hero-actions { justify-content: center; }
+    .hero p.tagline { margin-left: auto; margin-right: auto; }
+    .hero-visual { order: -1; }
+    .illu { width: min(300px, 78%); }
+    .about { grid-template-columns: 1fr; gap: 40px; padding: 90px 24px; text-align: center; }
+    .about-visual { order: -1; }
+    .about-content p, .section-header { margin-left: auto; margin-right: auto; }
+    .stats-row { justify-content: center; }
+    section.block { padding: 90px 24px; }
+    .cta-char { display: none; }
+    .exp-when { margin-left: 0; width: 100%; }
+    nav .nav-links {
+      position: absolute; top: 64px; left: 0; right: 0; flex-direction: column; gap: 0;
+      background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.06);
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+    }
+    nav .nav-links.open { max-height: 360px; }
+    nav .nav-links a { padding: 15px 24px; border-bottom: 1px solid rgba(0,0,0,0.04); }
+    .menu-toggle { display: block; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .illu, .geo { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="lang-zh">
+
+<!--
+  EXAMPLE / TEMPLATE — Flat Character Whitespace style.
+  This is a desensitized reference site bundled with the who-am-i skill.
+  The persona (李明 / Li Ming), email, and school are generic placeholders — swap in real content.
+  Character illustrations point to generated-images/*.png and fall back to inline SVG when absent.
+-->
+
+<!-- ===================== NAV ===================== -->
+<nav>
+  <div class="logo">李明 <span class="sub">Li Ming</span></div>
+  <div class="nav-right">
+    <ul class="nav-links" id="navlinks">
+      <li><a href="#about"><span class="zh">关于</span><span class="en">About</span></a></li>
+      <li><a href="#skills"><span class="zh">能力</span><span class="en">Skills</span></a></li>
+      <li><a href="#work"><span class="zh">作品集</span><span class="en">Work</span></a></li>
+      <li><a href="#experience"><span class="zh">经历</span><span class="en">Experience</span></a></li>
+      <li><a href="#education"><span class="zh">教育</span><span class="en">Education</span></a></li>
+      <li><a href="#contact"><span class="zh">联系</span><span class="en">Contact</span></a></li>
+    </ul>
+    <button class="langbtn" id="langbtn" aria-label="切换语言 / switch language">
+      <span class="zh"><span class="on">中</span> / <span class="off">EN</span></span>
+      <span class="en"><span class="off">中</span> / <span class="on">EN</span></span>
+    </button>
+    <button class="menu-toggle" id="menubtn" aria-label="menu">≡</button>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-tags">
+      <span class="pill coral">AI Builder</span>
+      <span class="pill coral">FAD</span>
+      <span class="pill blue"><span class="zh">高级产品经理</span><span class="en">Senior PM</span></span>
+      <span class="pill lav"><span class="zh">金融科技</span><span class="en">FinTech</span></span>
+      <span class="pill lav"><span class="zh">互联网教育</span><span class="en">EdTech</span></span>
+      <span class="pill mint"><span class="zh">QS 前 50</span><span class="en">QS Top 50</span></span>
+    </div>
+    <h1>
+      <span class="zh">我不是传统产品经理，<br>我是把 <strong>AI 跑进业务现场</strong> 的 Builder。</span>
+      <span class="en">I build <strong>AI systems</strong> that<br>survive real business traffic.</span>
+    </h1>
+    <p class="tagline">
+      <span class="zh">计算机背景，Agent 架构实战，金融科技、保险、在线教育三段完整落地经验。专注把复杂模型能力变成可运营、可评估、可增长的业务系统。</span>
+      <span class="en">Computer science background, hands-on Agent architecture, and end-to-end launches across fintech, insurance, and online education. I turn model capabilities into operational, measurable, revenue-facing systems.</span>
+    </p>
+    <div class="hero-actions">
+      <a href="#work" class="btn-primary"><span class="zh">查看作品 →</span><span class="en">See my work →</span></a>
+      <a href="#contact" class="btn-ghost"><span class="zh">联系我</span><span class="en">Get in touch</span></a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <!-- AI-generated flat illustration (handstand). Falls back to inline SVG until generated. -->
+    <img class="illu" src="generated-images/char-handstand.png" alt="扁平风插画：倒立的人物"
+         onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='block';" />
+    <svg class="illu" style="display:none" viewBox="0 0 360 470" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="180" cy="444" rx="86" ry="12" fill="#E6F1FB"/>
+      <!-- legs up -->
+      <path d="M150 250 Q140 152 130 70" stroke="#85B7EB" stroke-width="30" stroke-linecap="round" fill="none"/>
+      <path d="M206 250 Q220 156 242 80" stroke="#85B7EB" stroke-width="30" stroke-linecap="round" fill="none"/>
+      <ellipse cx="129" cy="64" rx="15" ry="10" fill="#F5DCC8" transform="rotate(-12 129 64)"/>
+      <ellipse cx="246" cy="74" rx="15" ry="10" fill="#F5DCC8" transform="rotate(14 246 74)"/>
+      <path d="M150 250 Q178 232 206 250 L201 282 Q178 272 155 282 Z" fill="#6FA6DC"/>
+      <!-- torso (coral) -->
+      <path d="M155 252 Q149 312 158 352 L208 352 Q215 308 207 252 Q181 268 155 252Z" fill="#F0997B"/>
+      <!-- arms down to hands -->
+      <path d="M160 350 Q150 382 150 405" stroke="#F0997B" stroke-width="22" stroke-linecap="round" fill="none"/>
+      <path d="M206 350 Q215 382 215 405" stroke="#F0997B" stroke-width="22" stroke-linecap="round" fill="none"/>
+      <path d="M150 396 L150 410" stroke="#F5DCC8" stroke-width="18" stroke-linecap="round"/>
+      <path d="M215 396 L215 410" stroke="#F5DCC8" stroke-width="18" stroke-linecap="round"/>
+      <ellipse cx="150" cy="415" rx="14" ry="9" fill="#F5DCC8"/>
+      <ellipse cx="215" cy="415" rx="14" ry="9" fill="#F5DCC8"/>
+      <!-- head -->
+      <circle cx="182" cy="372" r="30" fill="#F5DCC8"/>
+      <path d="M156 360 Q182 340 209 360 Q209 372 199 374 Q182 360 166 374 Q156 372 156 360Z" fill="#E07A5A"/>
+      <path d="M156 366 Q150 396 168 405 Q160 386 167 366Z" fill="#E07A5A"/>
+      <path d="M208 366 Q214 396 196 405 Q204 386 197 366Z" fill="#E07A5A"/>
+      <circle cx="172" cy="382" r="3" fill="#1a1a1a"/>
+      <circle cx="192" cy="382" r="3" fill="#1a1a1a"/>
+      <path d="M172 367 Q182 361 192 367" stroke="#C98C6E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <circle cx="284" cy="150" r="6" fill="#AFA9EC" opacity="0.6"/>
+      <circle cx="70" cy="206" r="5" fill="#5DCAA5" opacity="0.6"/>
+    </svg>
+    <div class="geo g1"></div>
+    <div class="geo g2"></div>
+    <div class="geo g3"></div>
+    <div class="geo g4"></div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="about" id="about">
+  <div class="about-visual">
+    <img class="illu" src="generated-images/char-bluehair.png" alt="扁平风插画：蓝发伸手的人物"
+         onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='block';" />
+    <svg class="illu" style="display:none" viewBox="0 0 400 480" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="200" cy="250" rx="170" ry="180" fill="#ffffff" opacity="0.55"/>
+      <path d="M150 130 Q160 80 215 82 Q272 84 280 138 Q284 172 268 196 L162 196 Q146 168 150 130Z" fill="#85B7EB"/>
+      <path d="M156 132 Q166 92 215 92 Q264 94 272 140 Q276 166 262 188 L168 188 Q152 164 156 132Z" fill="#B5D4F4"/>
+      <path d="M150 130 Q150 175 138 215 Q132 240 150 250 L168 196 Q156 168 150 130Z" fill="#378ADD"/>
+      <ellipse cx="214" cy="160" rx="36" ry="44" fill="#F5DCC8"/>
+      <circle cx="203" cy="158" r="3" fill="#1a1a1a"/>
+      <circle cx="229" cy="158" r="3" fill="#1a1a1a"/>
+      <path d="M205 174 Q216 182 227 174" stroke="#C98C6E" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M180 202 Q170 258 158 312 L268 300 Q256 248 244 196 Q228 210 212 210 Q196 210 180 202Z" fill="#AFA9EC"/>
+      <path d="M262 212 Q306 198 356 182" stroke="#AFA9EC" stroke-width="28" stroke-linecap="round" fill="none"/>
+      <path d="M266 214 Q308 200 354 184" stroke="#F5DCC8" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <circle cx="356" cy="183" r="11" fill="#F5DCC8"/>
+      <path d="M186 214 Q156 246 138 288" stroke="#AFA9EC" stroke-width="26" stroke-linecap="round" fill="none"/>
+      <path d="M188 216 Q160 244 142 284" stroke="#F5DCC8" stroke-width="16" stroke-linecap="round" fill="none"/>
+      <path d="M164 308 Q148 384 128 456 L182 462 Q192 392 204 332 Q216 392 226 460 L282 452 Q260 380 244 300 Z" fill="#F0997B"/>
+      <ellipse cx="154" cy="462" rx="22" ry="9" fill="#F5DCC8"/>
+      <ellipse cx="254" cy="456" rx="22" ry="9" fill="#F5DCC8"/>
+      <circle cx="360" cy="168" r="6" fill="#F0997B" opacity="0.6"/>
+      <circle cx="344" cy="142" r="4" fill="#5DCAA5" opacity="0.5"/>
+      <circle cx="118" cy="292" r="5" fill="#AFA9EC" opacity="0.5"/>
+      <path d="M100 380 Q200 342 300 392" stroke="#FAECE7" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M92 408 Q200 370 308 418" stroke="#E1F5EE" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="about-content">
+    <div class="eyebrow">About Me</div>
+    <h2><span class="zh">把 AI 做成能上线的系统</span><span class="en">I ship AI, not demos</span></h2>
+    <p>
+      <span class="zh">我是李明，一个计算机背景出身的 AI Builder。过去几年，我在在线教育、保险、金融科技场景里，把 Agent、Workflow、RAG 与业务 SOP 结合，做过 Sales Agent、AI 助教、智能外呼和实时决策辅助。</span>
+      <span class="en">I am Li Ming, an AI Builder with a computer science background and end-to-end product launch experience across online education, insurance, and fintech. I build agents that go beyond demos.</span>
+    </p>
+    <p>
+      <span class="zh">我习惯从业务链路里找可自动化的关键节点，再把它落成可配置、可评测、可持续迭代的系统——让 AI 既能自动化，也能被管理。</span>
+      <span class="en">I find the automatable nodes in a business flow, then turn them into configurable, measurable, continuously-iterating systems — AI that can both automate and be governed.</span>
+    </p>
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num">40万+</div>
+        <div class="stat-label"><span class="zh">服务学员</span><span class="en">learners served</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">2万+</div>
+        <div class="stat-label"><span class="zh">日均咨询量</span><span class="en">daily inquiries</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">4</div>
+        <div class="stat-label"><span class="zh">行业完整落地</span><span class="en">industries shipped</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SKILLS ===================== -->
+<section class="block" id="skills">
+  <div class="inner">
+    <div class="section-header">
+      <div class="eyebrow">What I Do</div>
+      <h2><span class="zh">我擅长什么</span><span class="en">Skills / What I Do</span></h2>
+      <p><span class="zh">从架构设计到评测治理，关注 AI 在真实业务里的可用、稳定与可增长。</span><span class="en">From architecture to governance — making AI usable, stable, and growth-driving in real business.</span></p>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-ic">◈</div>
+        <h3><span class="zh">AI Agent 与 Workflow 设计</span><span class="en">AI Agent &amp; Workflow Design</span></h3>
+        <p><span class="zh">设计生产级 Agent 架构，覆盖 Master Prompt、Dynamic Skill、Fact Library、RAG、上下文组装、工具调用与安全重写。熟悉基于 LangGraph 的多节点流程编排。</span><span class="en">Production-ready Agent systems across Master Prompt, Dynamic Skill, Fact Library, RAG, context assembly, tool use, and safety rewriting. Hands-on multi-node orchestration with LangGraph.</span></p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-ic">◎</div>
+        <h3><span class="zh">业务流程 Agent 化</span><span class="en">Business Process Agentization</span></h3>
+        <p><span class="zh">把销售、客服、运营、质检等复杂 SOP 拆成可识别、可路由、可执行、可回流的流程节点，让 AI 承接标准化动作，让人工聚焦高价值判断。</span><span class="en">Translate complex sales, service, ops, and QA SOPs into identifiable, routable, executable, measurable nodes — AI handles the repeatable, humans handle high-value judgment.</span></p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-ic">✦</div>
+        <h3><span class="zh">AI 产品系统设计</span><span class="en">AI Product System Architecture</span></h3>
+        <p><span class="zh">搭建意图体系、流程画布、配置后台、话术库、策略规则与实时决策辅助，让业务团队可以低成本配置、持续运营和快速迭代。</span><span class="en">Build intent taxonomies, process canvases, config consoles, response libraries, and real-time decision support that business teams can operate and iterate themselves.</span></p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-ic">◇</div>
+        <h3><span class="zh">评测、治理与稳定性</span><span class="en">Evaluation &amp; Governance</span></h3>
+        <p><span class="zh">建立自动化评测、Badcase 回流、事实一致性校验、运营合规与兜底机制。商业场景里，我更关心可控性、可解释性与上线后的持续表现。</span><span class="en">Automated evaluation, badcase feedback loops, factual-consistency checks, compliance, and fallback. In production AI I care about controllability, explainability, and long-term performance.</span></p>
+      </div>
+      <div class="skill-card">
+        <div class="skill-ic">⬡</div>
+        <h3><span class="zh">跨行业落地经验</span><span class="en">Cross-Industry Launches</span></h3>
+        <p><span class="zh">在线教育、互联网保险、综合金融、跨境金融科技等场景的完整产品落地，能在增长目标、风控约束、运营效率与技术可实现性之间做取舍。</span><span class="en">Shipped across online education, internet insurance, integrated finance, and cross-border fintech — balancing growth, risk, efficiency, and feasibility in one conversation.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PORTFOLIO / WORK ===================== -->
+<section class="block work-section" id="work">
+  <div class="inner">
+    <div class="section-header">
+      <div class="eyebrow">Portfolio</div>
+      <h2><span class="zh">作品集</span><span class="en">Selected Work</span></h2>
+      <p><span class="zh">个人设计项目、Agent 与 Skill 作品（内容陆续补充中）。</span><span class="en">Personal design projects, Agents, and Skills — more coming soon.</span></p>
+    </div>
+    <div class="work-grid">
+
+      <div class="work-card coral">
+        <div class="work-ph">
+          <div class="work-ic">◈</div>
+          <span class="pht"><span class="zh">项目图片占位</span><span class="en">Project image placeholder</span></span>
+          <span class="phs">1200 × 750</span>
+        </div>
+        <div class="work-info">
+          <h3><span class="zh">个人设计项目</span><span class="en">Design Projects</span></h3>
+          <p><span class="zh">产品原型、界面设计与体验改造案例。点击查看详情（待补充）。</span><span class="en">Product prototypes, UI design, and experience redesigns. Case details coming soon.</span></p>
+          <div class="work-tags"><span class="tag"><span class="zh">产品设计</span><span class="en">Product</span></span><span class="tag">UI/UX</span><span class="tag"><span class="zh">原型</span><span class="en">Prototype</span></span></div>
+        </div>
+      </div>
+
+      <div class="work-card blue">
+        <div class="work-ph">
+          <div class="work-ic">◎</div>
+          <span class="pht"><span class="zh">Agent 演示占位</span><span class="en">Agent demo placeholder</span></span>
+          <span class="phs">1200 × 750</span>
+        </div>
+        <div class="work-info">
+          <h3><span class="zh">Agent 作品</span><span class="en">Agents</span></h3>
+          <p><span class="zh">销售 Agent、AI 助教等生产级 Agent 的架构与演示（待补充）。</span><span class="en">Production-grade Agents such as Sales Agents and AI tutors — architecture and demos coming soon.</span></p>
+          <div class="work-tags"><span class="tag">Sales Agent</span><span class="tag">LangGraph</span><span class="tag">RAG</span></div>
+        </div>
+      </div>
+
+      <div class="work-card lav">
+        <div class="work-ph">
+          <div class="work-ic">✦</div>
+          <span class="pht"><span class="zh">Skill 展示占位</span><span class="en">Skill showcase placeholder</span></span>
+          <span class="phs">1200 × 750</span>
+        </div>
+        <div class="work-info">
+          <h3><span class="zh">Skill 作品</span><span class="en">Skills</span></h3>
+          <p><span class="zh">可复用的 Agent Skill / 工具能力，配置化、可评测（待补充）。</span><span class="en">Reusable Agent Skills and tool capabilities — configurable and measurable. Coming soon.</span></p>
+          <div class="work-tags"><span class="tag">Skill</span><span class="tag">MCP</span><span class="tag"><span class="zh">配置化</span><span class="en">Config-driven</span></span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EXPERIENCE ===================== -->
+<section class="block exp-section" id="experience">
+  <div class="inner">
+    <div class="section-header">
+      <div class="eyebrow">Experience</div>
+      <h2><span class="zh">工作经历</span><span class="en">Experience</span></h2>
+      <p><span class="zh">从 Sales Agent 到 AI 辅助中台，每一段都关注真实的业务结果。</span><span class="en">From Sales Agents to AI assist platforms — every role chasing real business outcomes.</span></p>
+    </div>
+    <div class="exp-list">
+
+      <div class="exp-card">
+        <div class="exp-bar"></div>
+        <div>
+          <div class="exp-head">
+            <span class="exp-role"><span class="zh">某头部在线教育集团</span><span class="en">Top Online Education Group</span></span>
+            <span class="exp-co"><span class="zh">AI 产品经理 / AI Builder</span><span class="en">AI Product Manager / AI Builder</span></span>
+            <span class="exp-when">2025.06 – 2026.04</span>
+          </div>
+          <p class="exp-impact"><span class="zh">核心成果：服务 <span class="hl">数十万级学员</span>，支撑 2 万级日咨询量，搭建「自动触达 + AI 承接 + 人工兜底」协同体系。</span><span class="en">Key outcome: served <span class="hl">hundreds of thousands of learners</span>, handled tens of thousands of daily inquiries, built an automated-outreach + AI-handling + human-fallback operating model.</span></p>
+          <p class="exp-desc"><span class="zh">主导 AI 助教与 Sales Agent 从 0 到 1 落地。拆解咨询、跟进、运营、转化、质检全链路 SOP，基于学员画像、出勤行为、生命周期与销售情报生成动态策略。架构上采用 Master Prompt + Dynamic Skill + Fact Library 分层设计，基于 LangGraph 编排信息抽取、策略路由、上下文组装、回复生成、安全重写等节点，业务侧可通过 Markdown 配置策略与话术。</span><span class="en">Led the 0-to-1 launch of an AI assistant and Sales Agent system. Broke down the full sales SOP, designed dynamic strategies from learner profiles, attendance, lifecycle, and sales intelligence. Built a layered Master Prompt + Dynamic Skill + Fact Library architecture with LangGraph workflows, letting business teams configure strategies and scripts via Markdown.</span></p>
+          <div class="exp-tags"><span class="tag">Sales Agent</span><span class="tag">LangGraph</span><span class="tag">RAG</span><span class="tag"><span class="zh">人机协同</span><span class="en">Human-in-loop</span></span></div>
+        </div>
+      </div>
+
+      <div class="exp-card">
+        <div class="exp-bar"></div>
+        <div>
+          <div class="exp-head">
+            <span class="exp-role"><span class="zh">某互联网保险上市公司</span><span class="en">Public Internet Insurance Co.</span></span>
+            <span class="exp-co"><span class="zh">产品经理专家</span><span class="en">Product Lead</span></span>
+            <span class="exp-when">2022.12 – 2025.06</span>
+          </div>
+          <p class="exp-impact"><span class="zh">核心成果：试点坐席跟单效率 <span class="hl">提升 20%+</span>，单会话处理时长从 8 分钟级降至 6 分钟级，新人培训由周级压缩到天级。</span><span class="en">Key outcome: agent follow-up efficiency <span class="hl">up 20%+</span>, handling time cut from ~8 to ~6 minutes, new-hire training compressed from weeks to days.</span></p>
+          <p class="exp-desc"><span class="zh">主导车险、健康险销售场景的 AI 辅助多轮对话中台，覆盖智能外呼与 IM。设计「主意图-子意图-业务节点」三层 Workflow，通过语义纠偏与小模型优化提升意图识别稳定性；建设 SOP 流程画布，将询价、产品对比、优惠促成抽象为可配置节点，让业务从开发驱动转向配置驱动。</span><span class="en">Led the AI-assisted multi-turn conversation platform for auto and health insurance, covering outbound calls and IM. Designed a three-layer intent workflow, improved recognition via semantic correction and lightweight models, and built a configurable SOP canvas — shifting delivery from dev-driven to config-driven.</span></p>
+          <div class="exp-tags"><span class="tag"><span class="zh">意图识别</span><span class="en">Intent</span></span><span class="tag"><span class="zh">智能外呼</span><span class="en">Outbound</span></span><span class="tag">SOP Canvas</span><span class="tag"><span class="zh">实时决策辅助</span><span class="en">Decision support</span></span></div>
+        </div>
+      </div>
+
+      <div class="exp-card">
+        <div class="exp-bar"></div>
+        <div>
+          <div class="exp-head">
+            <span class="exp-role"><span class="zh">某大型综合金融集团</span><span class="en">Major Integrated Finance Group</span></span>
+            <span class="exp-co"><span class="zh">产品经理</span><span class="en">Product Manager</span></span>
+            <span class="exp-when">2020.12 – 2022.10</span>
+          </div>
+          <p class="exp-impact"><span class="zh">核心成果：客户经理经营工具带来 <span class="hl">百万级月活增长</span>，数据驱动积分体系支撑保费转化双位数提升。</span><span class="en">Key outcome: <span class="hl">million-level MAU growth</span> for relationship-manager tools; data-driven points system drove double-digit conversion uplift.</span></p>
+          <p class="exp-desc"><span class="zh">负责保险小程序权益与营销工具板块，为客户经理提供精细化经营抓手。通过营销玩法、权益配置与积分体系，把客户分层、经营成本与礼品额度转化为可执行的运营机制，帮助一线团队更高效地完成触达、激活与转化。</span><span class="en">Owned benefits and marketing tools in an insurance mini-program. Connected customer segmentation, operating cost, benefits, and points into executable operating mechanisms, helping frontline teams improve reach, activation, and conversion.</span></p>
+          <div class="exp-tags"><span class="tag"><span class="zh">营销工具</span><span class="en">Marketing tools</span></span><span class="tag"><span class="zh">积分体系</span><span class="en">Points system</span></span><span class="tag"><span class="zh">客户分层</span><span class="en">Segmentation</span></span></div>
+        </div>
+      </div>
+
+      <div class="exp-card">
+        <div class="exp-bar"></div>
+        <div>
+          <div class="exp-head">
+            <span class="exp-role"><span class="zh">某头部第三方支付与金融科技集团</span><span class="en">Leading Payment &amp; Fintech Group</span></span>
+            <span class="exp-co"><span class="zh">产品经理</span><span class="en">Product Manager</span></span>
+            <span class="exp-when">2019.07 – 2020.07</span>
+          </div>
+          <p class="exp-impact"><span class="zh">核心成果：核心授信功能客户使用率达到高位，放款规模实现 <span class="hl">翻倍级增长</span>。</span><span class="en">Key outcome: high adoption of core credit features and a <span class="hl">step-change increase in lending scale</span>.</span></p>
+          <p class="exp-desc"><span class="zh">负责跨境电商融资系统与账户风控能力，对接支付渠道与电商平台接口，推动授信端核心功能上线。针对跨境商户融资风险，设计逾期后的收款账户锁定能力，把风控策略嵌入资金流与账户体系，降低坏账风险并提升授信链路可控性。</span><span class="en">Owned cross-border e-commerce financing and account risk control. Integrated payment channels and platform interfaces, launched core credit features, and designed overdue account-locking — embedding risk control into the fund flow to cut bad debt and improve controllability.</span></p>
+          <div class="exp-tags"><span class="tag"><span class="zh">跨境风控</span><span class="en">Cross-border risk</span></span><span class="tag"><span class="zh">授信</span><span class="en">Credit</span></span><span class="tag"><span class="zh">支付对接</span><span class="en">Payments</span></span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EDUCATION ===================== -->
+<section class="block" id="education">
+  <div class="inner">
+    <div class="section-header">
+      <div class="eyebrow">Education</div>
+      <h2><span class="zh">教育背景</span><span class="en">Education</span></h2>
+    </div>
+    <div class="edu-grid">
+      <div class="edu-card">
+        <h4><span class="zh">某 QS 前 50 大学</span><span class="en">A QS Top-50 University</span></h4>
+        <p><span class="zh">信息技术硕士</span><span class="en">Master's, Information Technology</span></p>
+        <span class="yr">2017 – 2018 · QS Top 50</span>
+      </div>
+      <div class="edu-card">
+        <h4><span class="zh">某 2+2 联合培养项目</span><span class="en">A 2+2 Joint Program</span></h4>
+        <p><span class="zh">软件工程双学士 · 双校奖学金</span><span class="en">Dual Bachelor's, Software Engineering · Dual scholarship</span></p>
+        <span class="yr">2013 – 2017</span>
+      </div>
+      <div class="edu-card">
+        <h4><span class="zh">其他</span><span class="en">Additional</span></h4>
+        <p><span class="zh">PMP 项目管理认证 · 流畅英语听说读写</span><span class="en">PMP Certification · Fluent professional English</span></p>
+        <span class="yr">PMP · ENGLISH</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA / CONTACT ===================== -->
+<section class="cta-section" id="contact">
+  <div class="cta-char">
+    <svg viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+      <g transform="translate(100,150) scale(0.72) rotate(180)">
+        <path d="M-30,-80 Q0,-110 40,-85 Q55,-60 45,-35 Q25,-50 -5,-45 Q-30,-38 -35,-55Z" fill="#5DCAA5"/>
+        <path d="M-25,-78 Q5,-105 38,-83 Q50,-58 40,-35 Q22,-48 -3,-43 Q-28,-36 -32,-53Z" fill="#9FE1CB"/>
+        <ellipse cx="5" cy="-25" rx="26" ry="32" fill="#F5DCC8"/>
+        <path d="M-20,8 Q-30,50 -38,95 L42,88 Q32,48 26,5Z" fill="#F0997B"/>
+        <path d="M-22,18 Q-42,45 -52,78" stroke="#F5DCC8" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <path d="M28,14 Q45,38 56,65" stroke="#F5DCC8" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <path d="M-36,97 Q-45,145 -52,190 L-8,196 Q-5,148 2,102 Q8,152 12,198 L56,192 Q48,146 40,94Z" fill="#85B7EB"/>
+        <ellipse cx="-30" cy="196" rx="16" ry="7" fill="#F5DCC8"/>
+        <ellipse cx="34" cy="195" rx="16" ry="7" fill="#F5DCC8"/>
+      </g>
+      <circle cx="30" cy="40" r="5" fill="#F0997B" opacity="0.5"/>
+      <circle cx="170" cy="240" r="4" fill="#5DCAA5" opacity="0.5"/>
+      <circle cx="174" cy="64" r="3" fill="#85B7EB" opacity="0.4"/>
+    </svg>
+  </div>
+  <div class="cta-content">
+    <h2><span class="zh">有想把 AI 跑进业务的想法？<br>我们聊聊。</span><span class="en">Got an AI idea to ship?<br>Let's talk.</span></h2>
+    <p><span class="zh">如果你正在寻找一个能把 AI 想法拆成可上线系统的人，欢迎联系我。我更愿意聊具体问题：一个流程如何被 Agent 化，一个团队如何把 AI 从 Demo 做成生产能力。</span><span class="en">If you are looking for someone who turns AI ideas into systems that actually ship, I'd be glad to talk — about how to agentize a workflow, and how to move AI from demo to production.</span></p>
+    <div class="contact-methods">
+      <button class="cm email" data-copy="hello@example.com" data-zh="邮箱已复制" data-en="Email copied">
+        <span class="ic">✉</span> hello@example.com
+      </button>
+      <a class="cm xhs" id="xhsLink" href="https://www.xiaohongshu.com/" target="_blank" rel="noopener">
+        <span class="ic">📕</span> <span class="zh">小红书</span><span class="en">RedNote / 小红书</span>
+      </a>
+      <button class="cm wechat" data-copy="REPLACE_WECHAT_ID" data-zh="微信号已复制" data-en="WeChat ID copied">
+        <span class="ic">💬</span> <span class="zh">微信</span><span class="en">WeChat</span>
+      </button>
+    </div>
+    <div class="copied" id="copied"></div>
+    <div class="contact-note">
+      <span class="zh">※ 小红书主页链接与微信号为占位，请提供后我替换为真实信息。</span>
+      <span class="en">※ RedNote link and WeChat ID are placeholders — share the real ones and I'll swap them in.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <p>© 2026 李明 · Li Ming — AI Builder</p>
+  <div class="footer-links">
+    <a href="mailto:hello@example.com">Email</a>
+    <a href="#work"><span class="zh">作品集</span><span class="en">Work</span></a>
+    <a href="#experience"><span class="zh">经历</span><span class="en">Experience</span></a>
+    <a href="#contact"><span class="zh">联系</span><span class="en">Contact</span></a>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var body = document.body;
+    var saved = null;
+    try { saved = localStorage.getItem('lang'); } catch(e){}
+    if (saved === 'en' || saved === 'zh') {
+      body.className = 'lang-' + saved;
+      document.documentElement.lang = (saved === 'en') ? 'en' : 'zh-CN';
+    }
+
+    document.getElementById('langbtn').addEventListener('click', function(){
+      var next = body.classList.contains('lang-zh') ? 'en' : 'zh';
+      body.className = 'lang-' + next;
+      document.documentElement.lang = (next === 'en') ? 'en' : 'zh-CN';
+      try { localStorage.setItem('lang', next); } catch(e){}
+    });
+
+    var navlinks = document.getElementById('navlinks');
+    document.getElementById('menubtn').addEventListener('click', function(){ navlinks.classList.toggle('open'); });
+    navlinks.addEventListener('click', function(e){ if (e.target.closest('a')) navlinks.classList.remove('open'); });
+
+    // copy-to-clipboard contact buttons (email + wechat)
+    var copied = document.getElementById('copied');
+    function flash(msg){ copied.textContent = msg; copied.classList.add('show'); setTimeout(function(){ copied.classList.remove('show'); }, 1900); }
+    document.querySelectorAll('.cm[data-copy]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var val = btn.getAttribute('data-copy');
+        var msg = body.classList.contains('lang-en') ? btn.getAttribute('data-en') : btn.getAttribute('data-zh');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(val).then(function(){ flash(msg + ' · ' + val); }).catch(function(){ flash(val); });
+        } else { flash(val); }
+      });
+    });
+
+    // subtle parallax on floating circles
+    var geos = document.querySelectorAll('.geo');
+    var ticking = false;
+    document.addEventListener('scroll', function(){
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(function(){
+        var y = window.pageYOffset;
+        geos.forEach(function(el, i){ el.style.translate = '0 ' + (y * (i + 1) * 0.02) + 'px'; });
+        ticking = false;
+      });
+    });
+  })();
+</script>
+</body>
+</html>
