@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creative Bold Art — Style Implementation Sample</title>
+    <!--
+      Buildable implementation sample for the "Creative Bold Art" style (style-library.md · Style 1).
+      Self-contained: CSS + JS inlined; images come from the bundled fallback library
+      at ../assets/creative-bold/ (hero + low-density background, with mobile variants).
+      A single SVG displacement filter drives the liquid ripple; CSS handles layered drift
+      and caustic bloom; reduced-motion users get a static version.
+      The lower sections show how to extend the same style across About, Work, Skills, and Contact
+      without reusing the abstract hero as project evidence.
+    -->
+    <style>
+      :root {
+        --page-bg: #040914;
+        --page-panel: rgba(5, 10, 22, 0.68);
+        --page-border: rgba(141, 180, 255, 0.14);
+        --text-primary: #f6f7fb;
+        --text-secondary: rgba(232, 237, 255, 0.76);
+        --text-muted: rgba(232, 237, 255, 0.56);
+        --shadow-deep: 0 38px 90px rgba(0, 0, 0, 0.42);
+        --hero-radius: 34px;
+        --hero-image: url("../assets/creative-bold/hero.webp");
+        --hero-image-mobile: url("../assets/creative-bold/hero-mobile.webp");
+        --bg-image: url("../assets/creative-bold/background.webp");
+        --bg-image-mobile: url("../assets/creative-bold/background-mobile.webp");
+        --pointer-x: 50%;
+        --pointer-y: 50%;
+        --shift-x: 0px;
+        --shift-y: 0px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        color-scheme: dark;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background: var(--page-bg);
+        color: var(--text-primary);
+        font-family: "Avenir Next", "Segoe UI Variable Display", "Hiragino Sans GB",
+          "PingFang SC", sans-serif;
+      }
+
+      .filters {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+
+      .page-shell {
+        position: relative;
+        min-height: 100vh;
+        isolation: isolate;
+      }
+
+      .page-background,
+      .page-vignette {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .page-background {
+        background:
+          linear-gradient(180deg, rgba(2, 6, 16, 0.9), rgba(2, 6, 16, 0.72)),
+          var(--bg-image) center / cover no-repeat;
+        opacity: 0.94;
+      }
+
+      .page-background::before {
+        content: "";
+        position: absolute;
+        inset: -6%;
+        background: var(--bg-image) center / cover no-repeat;
+        opacity: 0.66;
+        transform: scale(1.06);
+        animation: background-drift 26s linear infinite alternate;
+      }
+
+      .page-background::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 18% 18%, rgba(255, 74, 173, 0.12), transparent 30%),
+          radial-gradient(circle at 82% 12%, rgba(255, 140, 69, 0.12), transparent 26%),
+          radial-gradient(circle at 76% 78%, rgba(39, 127, 255, 0.1), transparent 28%);
+        mix-blend-mode: screen;
+      }
+
+      .page-vignette {
+        background:
+          radial-gradient(circle at top, transparent 0 35%, rgba(0, 0, 0, 0.3) 100%),
+          linear-gradient(180deg, rgba(2, 6, 16, 0.14), rgba(2, 6, 16, 0.56));
+      }
+
+      .topbar,
+      .page-main {
+        position: relative;
+        z-index: 1;
+      }
+
+      .topbar {
+        width: min(1200px, calc(100vw - 40px));
+        margin: 0 auto;
+        padding: 28px 0 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .brand-mark {
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 30% 30%, #fff7b9, transparent 36%),
+          conic-gradient(from 180deg, #97df18, #1d6bff, #ff4cb5, #ff7e18, #97df18);
+        box-shadow: 0 0 24px rgba(255, 96, 178, 0.48);
+      }
+
+      .brand-name,
+      .topbar-note,
+      .eyebrow,
+      .pill-row span,
+      .hero-footer strong,
+      .hero-footer span,
+      .proof-card h2,
+      .proof-card p {
+        letter-spacing: 0.01em;
+      }
+
+      .brand-name {
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+
+      .topbar-note {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        max-width: 420px;
+        text-align: right;
+      }
+
+      .page-main {
+        width: min(1200px, calc(100vw - 40px));
+        margin: 0 auto;
+        padding: 28px 0 72px;
+      }
+
+      .hero-stage {
+        position: relative;
+        min-height: min(80vh, 820px);
+        border-radius: var(--hero-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow-deep);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #030814;
+      }
+
+      .hero-stage::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(
+            90deg,
+            rgba(3, 8, 20, 0.1) 0%,
+            rgba(3, 8, 20, 0.04) 44%,
+            rgba(3, 8, 20, 0.6) 72%,
+            rgba(3, 8, 20, 0.88) 100%
+          );
+        z-index: 2;
+      }
+
+      .hero-stage::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            circle at var(--pointer-x) var(--pointer-y),
+            rgba(255, 255, 255, 0.14),
+            transparent 28%
+          );
+        opacity: 0.22;
+        mix-blend-mode: screen;
+        z-index: 4;
+        pointer-events: none;
+        transition: opacity 220ms ease;
+      }
+
+      .hero-layer,
+      .hero-ripples,
+      .hero-grid,
+      .hero-copy {
+        position: absolute;
+        inset: 0;
+      }
+
+      .hero-layer {
+        background-image: var(--hero-image);
+        background-size: cover;
+        background-position: center;
+      }
+
+      .hero-layer--base {
+        animation: hero-drift 16s linear infinite alternate;
+      }
+
+      .hero-layer--distortion {
+        filter: url(#liquid-ripple);
+        mix-blend-mode: screen;
+        opacity: 0.32;
+        clip-path: inset(0 38% 0 0 round var(--hero-radius));
+        transform: scale(1.035) translate3d(var(--shift-x), var(--shift-y), 0);
+      }
+
+      .hero-layer--caustic {
+        clip-path: inset(0 36% 0 0 round var(--hero-radius));
+        background:
+          radial-gradient(circle at 18% 20%, rgba(255, 170, 94, 0.28), transparent 24%),
+          radial-gradient(circle at 28% 58%, rgba(25, 142, 255, 0.24), transparent 18%),
+          radial-gradient(circle at 7% 78%, rgba(144, 223, 22, 0.22), transparent 18%),
+          repeating-radial-gradient(
+            circle at 22% 44%,
+            rgba(255, 255, 255, 0.12) 0 1px,
+            transparent 10px 38px
+          );
+        filter: blur(16px) saturate(112%);
+        opacity: 0.64;
+        mix-blend-mode: screen;
+        animation: caustic-drift 14s linear infinite alternate;
+      }
+
+      .hero-ripples {
+        clip-path: inset(0 34% 0 0 round var(--hero-radius));
+        z-index: 4;
+        pointer-events: none;
+      }
+
+      .ripple {
+        position: absolute;
+        border-radius: 50%;
+        border: 1px solid rgba(229, 243, 255, 0.32);
+        box-shadow:
+          0 0 22px rgba(50, 155, 255, 0.18),
+          inset 0 0 28px rgba(255, 255, 255, 0.1);
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.46);
+        animation: ripple-expand 9.2s linear infinite;
+      }
+
+      .ripple--a {
+        top: 26%;
+        left: 17%;
+        width: 210px;
+        height: 210px;
+        animation-delay: 0s;
+      }
+
+      .ripple--b {
+        top: 55%;
+        left: 29%;
+        width: 280px;
+        height: 280px;
+        animation-delay: 2.8s;
+      }
+
+      .ripple--c {
+        top: 74%;
+        left: 11%;
+        width: 190px;
+        height: 190px;
+        animation-delay: 5.4s;
+      }
+
+      .hero-grid {
+        z-index: 5;
+        background:
+          linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.02) 0,
+            rgba(255, 255, 255, 0.02) 1px,
+            transparent 1px,
+            transparent 12px
+          ),
+          linear-gradient(
+            rgba(255, 255, 255, 0.02) 0,
+            rgba(255, 255, 255, 0.02) 1px,
+            transparent 1px,
+            transparent 12px
+          );
+        mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0 48%, transparent 78%);
+        opacity: 0.22;
+      }
+
+      .hero-copy {
+        z-index: 6;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: clamp(42px, 7vw, 72px);
+      }
+
+      .hero-copy > * {
+        position: relative;
+      }
+
+      .hero-copy {
+        color: var(--text-primary);
+      }
+
+      .hero-copy .eyebrow,
+      .hero-copy h1,
+      .hero-copy .summary,
+      .hero-copy .pill-row,
+      .hero-copy .hero-footer {
+        width: min(430px, 100%);
+        margin-left: auto;
+      }
+
+      .eyebrow {
+        margin: 0 0 18px;
+        color: rgba(255, 255, 255, 0.74);
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .hero-copy h1 {
+        margin: 0;
+        font-size: clamp(2.9rem, 5.5vw, 5.9rem);
+        line-height: 0.94;
+        letter-spacing: -0.045em;
+        text-wrap: balance;
+      }
+
+      .summary {
+        margin: 22px 0 0;
+        color: var(--text-secondary);
+        font-size: clamp(1rem, 1.15vw, 1.08rem);
+        line-height: 1.65;
+      }
+
+      .pill-row {
+        margin-top: 26px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .pill-row span {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(8, 14, 28, 0.64);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.88rem;
+      }
+
+      .hero-footer {
+        margin-top: 28px;
+        padding: 18px 18px 20px;
+        border-radius: 22px;
+        background:
+          linear-gradient(180deg, rgba(10, 15, 28, 0.78), rgba(6, 11, 22, 0.62));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(16px);
+        display: grid;
+        gap: 16px;
+      }
+
+      .hero-footer strong,
+      .proof-card h2 {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.88rem;
+      }
+
+      .hero-footer span,
+      .proof-card p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .proof-grid {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .proof-card {
+        padding: 22px;
+        border-radius: 24px;
+        background: var(--page-panel);
+        border: 1px solid var(--page-border);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 22px 44px rgba(0, 0, 0, 0.18);
+      }
+
+      .proof-card h2 {
+        margin: 0 0 12px;
+      }
+
+      .proof-card p {
+        margin: 0;
+      }
+
+      .style-sample {
+        margin-top: 18px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .sample-band {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(24px, 4vw, 42px);
+        border-radius: 30px;
+        background:
+          linear-gradient(135deg, rgba(6, 12, 26, 0.9), rgba(5, 10, 22, 0.62)),
+          radial-gradient(circle at 0% 0%, rgba(142, 224, 38, 0.16), transparent 34%),
+          radial-gradient(circle at 100% 12%, rgba(255, 75, 181, 0.15), transparent 30%);
+        border: 1px solid var(--page-border);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+        backdrop-filter: blur(18px);
+      }
+
+      .sample-band::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(90deg, transparent, rgba(141, 180, 255, 0.12), transparent),
+          radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(255, 255, 255, 0.08), transparent 24%);
+        pointer-events: none;
+      }
+
+      .sample-kicker {
+        margin: 0 0 10px;
+        color: #9eea2a;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .sample-title {
+        margin: 0;
+        max-width: 760px;
+        font-size: clamp(1.75rem, 4vw, 3.3rem);
+        line-height: 0.98;
+      }
+
+      .sample-copy {
+        margin: 16px 0 0;
+        max-width: 720px;
+        color: var(--text-secondary);
+        line-height: 1.72;
+      }
+
+      .module-grid {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .module-card {
+        min-height: 172px;
+        padding: 20px;
+        border-radius: 22px;
+        background: rgba(4, 9, 20, 0.62);
+        border: 1px solid rgba(141, 180, 255, 0.16);
+      }
+
+      .module-card strong {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 1rem;
+      }
+
+      .module-card p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.94rem;
+        line-height: 1.58;
+      }
+
+      .module-icon {
+        width: 38px;
+        height: 38px;
+        margin-bottom: 16px;
+        border-radius: 14px;
+        background:
+          radial-gradient(circle at 28% 28%, rgba(255, 255, 255, 0.92), transparent 18%),
+          conic-gradient(from 200deg, #97df18, #1d6bff, #ff4cb5, #ff7e18, #97df18);
+        box-shadow: 0 0 28px rgba(255, 76, 181, 0.28);
+      }
+
+      .contact-panel {
+        margin-top: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .contact-panel a,
+      .contact-panel span {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--text-primary);
+        text-decoration: none;
+        background: rgba(4, 9, 20, 0.56);
+      }
+
+      .contact-panel a:first-child {
+        border-color: rgba(158, 234, 42, 0.44);
+        box-shadow: 0 0 28px rgba(158, 234, 42, 0.12);
+      }
+
+      .reduced-motion .page-background::before,
+      .reduced-motion .hero-layer--base,
+      .reduced-motion .hero-layer--caustic,
+      .reduced-motion .ripple {
+        animation: none !important;
+      }
+
+      .reduced-motion .hero-layer--distortion {
+        opacity: 0.18;
+      }
+
+      @keyframes background-drift {
+        from {
+          transform: scale(1.06) translate3d(-1.5%, -1%, 0);
+        }
+        to {
+          transform: scale(1.12) translate3d(1.5%, 1.2%, 0);
+        }
+      }
+
+      @keyframes hero-drift {
+        from {
+          transform: scale(1.02) translate3d(-1.2%, -0.6%, 0);
+        }
+        to {
+          transform: scale(1.08) translate3d(1.4%, 0.8%, 0);
+        }
+      }
+
+      @keyframes caustic-drift {
+        from {
+          transform: translate3d(-2%, -1%, 0) scale(1);
+        }
+        to {
+          transform: translate3d(2.4%, 1.4%, 0) scale(1.08);
+        }
+      }
+
+      @keyframes ripple-expand {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.46);
+        }
+        12% {
+          opacity: 0.42;
+        }
+        62% {
+          opacity: 0.12;
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(1.54);
+        }
+      }
+
+      @media (max-width: 980px) {
+        .topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .topbar-note {
+          text-align: left;
+        }
+
+        .hero-stage {
+          min-height: 720px;
+        }
+
+        .hero-copy {
+          align-items: flex-end;
+          padding-top: 84px;
+        }
+
+        .hero-copy .eyebrow,
+        .hero-copy h1,
+        .hero-copy .summary,
+        .hero-copy .pill-row,
+        .hero-copy .hero-footer {
+          width: min(480px, 100%);
+        }
+
+        .proof-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .module-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 760px) {
+        :root {
+          --hero-image: var(--hero-image-mobile);
+          --bg-image: var(--bg-image-mobile);
+        }
+
+        .page-main,
+        .topbar {
+          width: min(calc(100vw - 24px), 1200px);
+        }
+
+        .page-main {
+          padding-top: 18px;
+          padding-bottom: 34px;
+        }
+
+        .topbar {
+          padding-top: 16px;
+        }
+
+        .hero-stage {
+          min-height: 680px;
+          border-radius: 28px;
+        }
+
+        .hero-stage::before {
+          background:
+            linear-gradient(
+              180deg,
+              rgba(3, 8, 20, 0.18) 0%,
+              rgba(3, 8, 20, 0.1) 34%,
+              rgba(3, 8, 20, 0.74) 72%,
+              rgba(3, 8, 20, 0.9) 100%
+            );
+        }
+
+        .hero-layer--distortion,
+        .hero-layer--caustic,
+        .hero-ripples,
+        .hero-grid {
+          clip-path: inset(0 0 40% 0 round 28px);
+        }
+
+        .hero-copy {
+          align-items: flex-end;
+          justify-content: flex-end;
+          padding: 26px;
+        }
+
+        .hero-copy .eyebrow,
+        .hero-copy h1,
+        .hero-copy .summary,
+        .hero-copy .pill-row,
+        .hero-copy .hero-footer {
+          width: 100%;
+        }
+
+        .hero-copy h1 {
+          font-size: clamp(2.4rem, 10vw, 4rem);
+        }
+
+        .hero-footer {
+          gap: 12px;
+        }
+
+        .pill-row span {
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="filters" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="liquid-ripple" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence
+            id="liquid-noise"
+            type="fractalNoise"
+            baseFrequency="0.008 0.026"
+            numOctaves="2"
+            seed="23"
+            stitchTiles="stitch"
+            result="noise"
+          />
+          <feDisplacementMap
+            id="liquid-displacement"
+            in="SourceGraphic"
+            in2="noise"
+            scale="12"
+            xChannelSelector="R"
+            yChannelSelector="B"
+          />
+        </filter>
+      </defs>
+    </svg>
+
+    <div class="page-shell">
+      <div class="page-background"></div>
+      <div class="page-vignette"></div>
+
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span class="brand-name">Your Name</span>
+        </div>
+        <div class="topbar-note">Hero uses the bundled fluid hero + background with ripple-flow motion. Replace with your own copy and visuals.</div>
+      </header>
+
+      <main class="page-main">
+        <section class="hero-stage" id="heroStage" aria-label="Animated fluid hero">
+          <div class="hero-layer hero-layer--base"></div>
+          <div class="hero-layer hero-layer--distortion"></div>
+          <div class="hero-layer hero-layer--caustic"></div>
+
+          <div class="hero-ripples" aria-hidden="true">
+            <span class="ripple ripple--a"></span>
+            <span class="ripple ripple--b"></span>
+            <span class="ripple ripple--c"></span>
+          </div>
+
+          <div class="hero-grid"></div>
+          <div class="hero-copy">
+            <p class="eyebrow">占位 Eyebrow · Replace</p>
+            <h1>Interfaces That Breathe Instead of Sitting Still.</h1>
+            <p class="summary">
+              一句话价值主张占位：你是谁、你做什么、为什么值得信任。
+              The colorful mass stays alive on the left while the right stays quiet for copy,
+              so the ripple reads as a brand signal rather than decorative noise.
+            </p>
+
+            <div class="pill-row">
+              <span>Wave-like distortion</span>
+              <span>Readable text zone</span>
+              <span>Portfolio-ready hero</span>
+            </div>
+
+            <div class="hero-footer">
+              <div>
+                <strong>Motion intent</strong>
+                <span>Slow liquid drift, expanding rings, subtle caustic bloom</span>
+              </div>
+              <div>
+                <strong>Safe usage</strong>
+                <span>Use as homepage hero with white typography on the right</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="proof-grid" aria-label="Usage notes">
+          <article class="proof-card">
+            <h2>Main Visual</h2>
+            <p>
+              Ripple motion is strongest over the colorful left side. The dark right third stays
+              structurally calm, so CTA and navigation do not fight the effect.
+            </p>
+          </article>
+          <article class="proof-card">
+            <h2>Site Background</h2>
+            <p>
+              The page backdrop uses the low-density fluid background with a very slow drift. It
+              supports content without turning every section into a poster.
+            </p>
+          </article>
+          <article class="proof-card">
+            <h2>Implementation</h2>
+            <p>
+              CSS handles the layered motion and transforms. A single SVG displacement filter adds
+              liquid distortion to the hero image. Reduced-motion users get a static version.
+            </p>
+          </article>
+        </section>
+
+        <section class="style-sample" aria-label="Creative Bold lower section samples">
+          <article class="sample-band" id="about">
+            <p class="sample-kicker">About / Proof</p>
+            <h2 class="sample-title">Keep the cinematic energy, but let proof stay readable.</h2>
+            <p class="sample-copy">
+              Use dark content bands, translucent panels, and controlled neon accents after the Hero.
+              Long paragraphs should sit on quiet surfaces. The abstract background stays atmospheric;
+              it never becomes project evidence.
+            </p>
+            <div class="module-grid">
+              <div class="module-card">
+                <div class="module-icon" aria-hidden="true"></div>
+                <strong>Profile proof</strong>
+                <p>Summarize the person, product direction, and credibility signals in concise blocks.</p>
+              </div>
+              <div class="module-card">
+                <div class="module-icon" aria-hidden="true"></div>
+                <strong>Operating context</strong>
+                <p>Use timeline rows or proof strips for experience instead of dense resume walls.</p>
+              </div>
+              <div class="module-card">
+                <div class="module-icon" aria-hidden="true"></div>
+                <strong>Motion rule</strong>
+                <p>Keep continuous motion in the Hero; later modules use static glow and hover feedback.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="sample-band" id="work">
+            <p class="sample-kicker">Work / Portfolio</p>
+            <h2 class="sample-title">Project cards use text and icons unless real proof media exists.</h2>
+            <div class="module-grid">
+              <div class="module-card">
+                <div class="module-icon" aria-hidden="true"></div>
+                <strong>Agent workflow</strong>
+                <p>Context -> action -> mechanism -> result. Use a crisp system icon when no screenshot is supplied.</p>
+              </div>
+              <div class="module-card">
+                <div class="module-icon" aria-hidden="true"></div>
+                <strong>Product module</strong>
+                <p>Use a provided UI capture, demo link, or text+icon panel. Do not use hero art as a product shot.</p>
+              </div>
+              <div class="module-card">
+                <div class="module-icon" aria-hidden="true"></div>
+                <strong>Skill artifact</strong>
+                <p>Show reusable methods as technical capability cards with short proof references.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="sample-band" id="contact">
+            <p class="sample-kicker">Contact / CTA</p>
+            <h2 class="sample-title">Close with one bright action and quiet secondary links.</h2>
+            <p class="sample-copy">
+              The closing section should feel connected to the Hero, but calmer. Use a single accent
+              line or halo, real contact routes, and no dead buttons.
+            </p>
+            <div class="contact-panel">
+              <a href="mailto:hello@example.com">hello@example.com</a>
+              <span>Docs / Demo link only when provided</span>
+              <span>Footer metadata stays low contrast</span>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const heroStage = document.getElementById("heroStage");
+      const turbulence = document.getElementById("liquid-noise");
+      const displacement = document.getElementById("liquid-displacement");
+      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      let phase = 0;
+      let rafId = 0;
+      let isVisible = true;
+
+      const pointer = {
+        currentX: 0.5,
+        currentY: 0.5,
+        targetX: 0.5,
+        targetY: 0.5,
+      };
+
+      function applyReducedMotionState() {
+        root.classList.toggle("reduced-motion", mediaQuery.matches);
+      }
+
+      function tick() {
+        rafId = window.requestAnimationFrame(tick);
+
+        if (mediaQuery.matches || !isVisible) {
+          return;
+        }
+
+        phase += 0.014;
+        pointer.currentX += (pointer.targetX - pointer.currentX) * 0.07;
+        pointer.currentY += (pointer.targetY - pointer.currentY) * 0.07;
+
+        const baseX = 0.0076 + Math.sin(phase * 0.86) * 0.0014;
+        const baseY = 0.024 + Math.cos(phase * 0.7) * 0.0038;
+        const scale = 11.5 + Math.sin(phase * 1.32) * 3.2;
+        const shiftX = (pointer.currentX - 0.5) * 22;
+        const shiftY = (pointer.currentY - 0.5) * 18;
+
+        turbulence.setAttribute("baseFrequency", `${baseX.toFixed(4)} ${baseY.toFixed(4)}`);
+        displacement.setAttribute("scale", scale.toFixed(2));
+
+        heroStage.style.setProperty("--pointer-x", `${(pointer.currentX * 100).toFixed(2)}%`);
+        heroStage.style.setProperty("--pointer-y", `${(pointer.currentY * 100).toFixed(2)}%`);
+        heroStage.style.setProperty("--shift-x", `${shiftX.toFixed(2)}px`);
+        heroStage.style.setProperty("--shift-y", `${shiftY.toFixed(2)}px`);
+      }
+
+      function onPointerMove(event) {
+        const rect = heroStage.getBoundingClientRect();
+        pointer.targetX = (event.clientX - rect.left) / rect.width;
+        pointer.targetY = (event.clientY - rect.top) / rect.height;
+      }
+
+      function onPointerLeave() {
+        pointer.targetX = 0.5;
+        pointer.targetY = 0.5;
+      }
+
+      function setupObserver() {
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            isVisible = entry.isIntersecting;
+          },
+          { threshold: 0.08 },
+        );
+
+        observer.observe(heroStage);
+      }
+
+      applyReducedMotionState();
+      mediaQuery.addEventListener("change", applyReducedMotionState);
+
+      heroStage.addEventListener("pointermove", onPointerMove);
+      heroStage.addEventListener("pointerleave", onPointerLeave);
+
+      setupObserver();
+      tick();
+    </script>
+  </body>
+</html>

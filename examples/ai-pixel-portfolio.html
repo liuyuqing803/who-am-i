@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Pixel — Style Implementation Sample</title>
+    <!--
+      Buildable implementation sample for the "AI Pixel" style (style-library.md · Style 4).
+      This file intentionally uses CSS pixel placeholders so it remains runnable without
+      external images. Production builds may also use assets/ai-pixel/hero.png,
+      hero-mobile.png, or background.png for site-level atmosphere; keep body text crisp.
+    -->
+    <style>
+      :root {
+        --bg: #080a10;
+        --panel: #111625;
+        --panel-2: #161d2e;
+        --ink: #f5f7fb;
+        --muted: #9aa7bd;
+        --cyan: #39d8ff;
+        --green: #91f05d;
+        --magenta: #ff5fc8;
+        --amber: #ffd166;
+        --red: #ff6b6b;
+        --line: #2b3449;
+        --pixel: 4px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--bg);
+        color-scheme: dark;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          radial-gradient(circle at 16% 18%, rgba(57, 216, 255, 0.13), transparent 28%),
+          radial-gradient(circle at 86% 8%, rgba(255, 95, 200, 0.12), transparent 24%),
+          var(--bg);
+        background-size: 24px 24px, 24px 24px, auto, auto, auto;
+        font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        padding: 18px 0;
+        background: linear-gradient(180deg, rgba(8, 10, 16, 0.96), rgba(8, 10, 16, 0.74));
+        backdrop-filter: blur(14px);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      .brand::before {
+        content: "";
+        width: 18px;
+        height: 18px;
+        background:
+          linear-gradient(90deg, var(--cyan) 50%, transparent 50%) 0 0 / 8px 8px,
+          linear-gradient(90deg, transparent 50%, var(--green) 50%) 0 8px / 8px 8px;
+        image-rendering: pixelated;
+        box-shadow: 0 0 18px rgba(57, 216, 255, 0.4);
+      }
+
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .nav a,
+      .pixel-button {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 0 12px;
+        color: var(--ink);
+        text-decoration: none;
+        background: var(--panel);
+        border: 2px solid var(--line);
+        box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.32);
+      }
+
+      .nav a:hover,
+      .pixel-button:hover {
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+
+      .hero {
+        min-height: calc(100svh - 74px);
+        display: grid;
+        grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.98fr);
+        gap: clamp(24px, 5vw, 64px);
+        align-items: center;
+        padding: clamp(36px, 7vw, 86px) 0;
+      }
+
+      .terminal {
+        border: 2px solid var(--line);
+        background: rgba(17, 22, 37, 0.84);
+        box-shadow:
+          inset -6px -6px 0 rgba(0, 0, 0, 0.28),
+          0 0 0 4px rgba(57, 216, 255, 0.04);
+      }
+
+      .terminal-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        color: var(--muted);
+        border-bottom: 2px solid var(--line);
+        background: #0d1220;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+      }
+
+      .terminal-body {
+        padding: clamp(22px, 5vw, 42px);
+      }
+
+      .prompt {
+        margin: 0 0 16px;
+        color: var(--green);
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 720px;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: clamp(2.5rem, 7vw, 5.6rem);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      .summary {
+        max-width: 650px;
+        margin: 20px 0 0;
+        color: var(--muted);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 1.04rem;
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .pixel-button.primary {
+        color: #061017;
+        background: var(--cyan);
+        border-color: var(--cyan);
+      }
+
+      .pixel-scene {
+        position: relative;
+        min-height: 420px;
+        border: 2px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(57, 216, 255, 0.08), transparent 32%),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          #0d1220;
+        background-size: auto, 16px 16px, 16px 16px, auto;
+        box-shadow: inset -8px -8px 0 rgba(0, 0, 0, 0.28);
+        overflow: hidden;
+      }
+
+      .pixel-scene::before {
+        content: "";
+        position: absolute;
+        left: 14%;
+        right: 14%;
+        bottom: 15%;
+        height: 42%;
+        background:
+          linear-gradient(var(--cyan), var(--cyan)) 18% 18% / 18% 8% no-repeat,
+          linear-gradient(var(--green), var(--green)) 80% 28% / 12% 8% no-repeat,
+          linear-gradient(var(--magenta), var(--magenta)) 50% 72% / 42% 8% no-repeat,
+          linear-gradient(#172238, #172238);
+        border: 2px solid var(--cyan);
+        box-shadow:
+          0 0 0 8px rgba(57, 216, 255, 0.06),
+          18px 18px 0 rgba(0, 0, 0, 0.24);
+        image-rendering: pixelated;
+      }
+
+      .pixel-scene::after {
+        content: "HERO BITMAP SLOT";
+        position: absolute;
+        left: 50%;
+        bottom: 10%;
+        transform: translateX(-50%);
+        color: rgba(245, 247, 251, 0.48);
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+      }
+
+      .section {
+        padding: clamp(42px, 8vw, 84px) 0;
+        border-top: 2px solid rgba(43, 52, 73, 0.8);
+      }
+
+      .section-title {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .section-title h2 {
+        margin: 0;
+        font-size: clamp(1.6rem, 4vw, 3rem);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .section-title span {
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        min-height: 176px;
+        padding: 18px;
+        border: 2px solid var(--line);
+        background: rgba(17, 22, 37, 0.82);
+        box-shadow: inset -5px -5px 0 rgba(0, 0, 0, 0.26);
+      }
+
+      .card .tag {
+        color: var(--amber);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+      }
+
+      .card h3 {
+        margin: 18px 0 10px;
+        font-size: 1rem;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.62;
+      }
+
+      .save-slot {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+      }
+
+      .slot-icon {
+        width: 52px;
+        height: 52px;
+        background:
+          linear-gradient(var(--green), var(--green)) 12px 8px / 28px 8px no-repeat,
+          linear-gradient(var(--cyan), var(--cyan)) 8px 22px / 36px 8px no-repeat,
+          linear-gradient(var(--magenta), var(--magenta)) 16px 36px / 20px 8px no-repeat,
+          #0d1220;
+        border: 2px solid var(--line);
+        image-rendering: pixelated;
+      }
+
+      .status-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .status {
+        padding: 14px;
+        border: 2px solid var(--line);
+        background: #0d1220;
+      }
+
+      .status strong {
+        display: block;
+        color: var(--green);
+        font-size: 1.35rem;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+        padding: 28px 0 42px;
+        color: var(--muted);
+        border-top: 2px solid var(--line);
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .pixel-scene::before {
+          animation: boot-pulse 2.8s steps(4, end) infinite;
+        }
+      }
+
+      @keyframes boot-pulse {
+        0%, 100% {
+          filter: brightness(1);
+        }
+        50% {
+          filter: brightness(1.28);
+        }
+      }
+
+      @media (max-width: 860px) {
+        .topbar,
+        .section-title {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .grid,
+        .status-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar shell">
+      <div class="brand">AI PIXEL STYLE</div>
+      <nav class="nav" aria-label="Sample navigation">
+        <a href="#about">About</a>
+        <a href="#work">Work</a>
+        <a href="#skills">Skills</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <div class="terminal">
+          <div class="terminal-head">
+            <span>whoami.exe</span>
+            <span>status: ready</span>
+          </div>
+          <div class="terminal-body">
+            <p class="prompt">&gt; load_identity --style ai-pixel</p>
+            <h1>Build the proof. Keep the pixels sharp.</h1>
+            <p class="summary">
+              Use pixel language for structure, icons, and rhythm while keeping real content readable.
+              Replace this copy with the Website Script and keep project evidence factual.
+            </p>
+            <div class="actions">
+              <a class="pixel-button primary" href="#work">View save slots</a>
+              <a class="pixel-button" href="#contact">Run contact</a>
+            </div>
+          </div>
+        </div>
+        <div class="pixel-scene" role="img" aria-label="Pixel-style hero placeholder for generated or provided bitmap art"></div>
+      </section>
+
+      <section class="section" id="about">
+        <div class="section-title">
+          <h2>Profile System</h2>
+          <span>About / proof modules</span>
+        </div>
+        <div class="status-row">
+          <div class="status"><strong>01</strong> Identity</div>
+          <div class="status"><strong>02</strong> Method</div>
+          <div class="status"><strong>03</strong> Proof</div>
+          <div class="status"><strong>04</strong> CTA</div>
+        </div>
+      </section>
+
+      <section class="section" id="work">
+        <div class="section-title">
+          <h2>Selected Save Slots</h2>
+          <span>Text+icon cards when media is missing</span>
+        </div>
+        <div class="grid">
+          <article class="card save-slot">
+            <div class="slot-icon" aria-hidden="true"></div>
+            <div>
+              <span class="tag">Agent</span>
+              <h3>Workflow case</h3>
+              <p>Context -> action -> mechanism -> result. Add real screenshots only when provided.</p>
+            </div>
+          </article>
+          <article class="card save-slot">
+            <div class="slot-icon" aria-hidden="true"></div>
+            <div>
+              <span class="tag">Product</span>
+              <h3>Feature page</h3>
+              <p>Use proof, demo, or sample output. Do not fabricate product UI.</p>
+            </div>
+          </article>
+          <article class="card save-slot">
+            <div class="slot-icon" aria-hidden="true"></div>
+            <div>
+              <span class="tag">Skill</span>
+              <h3>Reusable system</h3>
+              <p>Show capability, use case, and supporting artifact in compact modules.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="skills">
+        <div class="section-title">
+          <h2>Inventory</h2>
+          <span>Capabilities as system modules</span>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <span class="tag">slot-a</span>
+            <h3>AI workflow design</h3>
+            <p>Use crisp borders, compact labels, and proof references.</p>
+          </article>
+          <article class="card">
+            <span class="tag">slot-b</span>
+            <h3>Product explanation</h3>
+            <p>Frame problem, feature, mechanism, and outcome as readable system panels.</p>
+          </article>
+          <article class="card">
+            <span class="tag">slot-c</span>
+            <h3>Evaluation loop</h3>
+            <p>Keep body text normal; reserve pixel effects for frames and icons.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="contact">
+        <div class="terminal">
+          <div class="terminal-head">
+            <span>contact.command</span>
+            <span>routes: provided only</span>
+          </div>
+          <div class="terminal-body">
+            <p class="prompt">&gt; run next_step</p>
+            <h2>One command, clear contact.</h2>
+            <p class="summary">
+              Use a primary contact route and omit missing links. Unknown links are not rendered as fake buttons.
+            </p>
+            <div class="actions">
+              <a class="pixel-button primary" href="mailto:hello@example.com">hello@example.com</a>
+              <span class="pixel-button">Demo link: needs input</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer shell">
+      <span>AI Pixel sample / replace all copy with Website Script</span>
+      <span>Reduced motion respected / bitmap hero optional</span>
+    </footer>
+  </body>
+</html>

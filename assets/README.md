@@ -1,35 +1,39 @@
 # Bundled Fallback Asset Library
 
-These images let a site be built in a chosen style **even when the invoking model has no image-generation capability**. The decision logic and the requirement to make the choice visible to the user live in `../references/visual-assets-workflow.md` (**Capability Branch** and **Bundled Fallback Library**). In short:
+These images let the homepage/Hero of a site be built in a chosen style **even when the invoking model has no image-generation capability**. They are not a complete image set for About, Portfolio/Work, Contact, product feature, or proof/demo sections. The decision logic and the requirement to make the choice visible to the user live in `../references/visual-assets-workflow.md` (**Capability Branch** and **Bundled Fallback Library**). In short:
 
-- Model **can** generate images → generate from the per-style prompts in `../references/style-library.md`; ignore these fallbacks (or use them only as seeds).
+- Model **can** generate images → generate requested site-level visuals from the per-style prompts in `../references/style-library.md`; ignore these fallbacks (or use them only as seeds).
 - Model **cannot** → use the files here for the chosen style, and tell the user a bundled fallback is in use + how to upgrade.
-- Style folder empty/missing → treat as "missing", use a styled placeholder, and say so.
+- Style folder empty/missing → treat the Hero visual as "missing", use a styled placeholder, and say so.
 
 ## Folder = style
 
 | Folder | Style (style-library) | Status |
 | --- | --- | --- |
 | `flat/` | Style 3 · Flat Character Whitespace | **populated** — `hero.png`, `about.png` (即梦-generated, watermarked) |
-| `creative-bold/` | Style 1 · Creative Bold Art | **partially populated** — `hero.png` (即梦-generated, watermarked); case thumbnails pending |
-| `poetic-ethereal/` | Style 2 · Poetic Ethereal | pending — generate hero/case bitmaps from Style 2 prompt |
-| `ai-pixel/` | Style 4 · AI Pixel | pending — generate hero/case bitmaps from Style 4 prompt |
+| `creative-bold/` | Style 1 · Creative Bold Art | **populated** — `hero.webp` + `hero-mobile.webp`, `background.webp` + `background-mobile.webp` (clean, no watermark) |
+| `poetic-ethereal/` | Style 2 · Poetic Ethereal | **populated** — `hero.jpg` (clean watercolor, no watermark; misty mountains + faint stars) |
+| `ai-pixel/` | Style 4 · AI Pixel | **populated** — `hero.png` + `hero-mobile.png`, `background.png` (procedural raster fallback; clean, no watermark) |
 
 ## Slot naming
 
 Use these slot names so the site code can reference fallbacks predictably:
 
 - `hero.<ext>` — hero background or hero character
+- `background.<ext>` — secondary full-page background / atmosphere (optional; used by Creative Bold as a dim companion to the hero)
 - `about.<ext>` — about/portrait visual (optional)
-- `case-01.<ext>` … `case-05.<ext>` — portfolio/case thumbnails
+- `case-01.<ext>` … `case-05.<ext>` — reserved for user-provided or explicitly generated portfolio/case thumbnails; not currently bundled by default
 - `cta.<ext>` — CTA decorative visual (optional)
+- A `<slot>-mobile.<ext>` variant (e.g. `hero-mobile.webp`) is an optional tighter crop for narrow screens; Creative Bold and AI Pixel ship `hero-mobile`.
 
 ## Formats
 
-- Hero / background / case thumbnails: **PNG or JPG** (raster), because these styles need photographic/painterly/pixel texture.
-- The currently bundled assets (`flat/hero.png`, `flat/about.png`, `creative-bold/hero.png`) are 即梦(jimeng)-generated PNGs and **carry a visible "即梦AI / AI生成" watermark**. They are usable offline fallbacks, but a site that needs a clean look should regenerate from the per-style prompt (with a capable model) or have the user supply un-watermarked images under the same slot names.
-- `examples/flat-portfolio.html` is independent of this library: it references `generated-images/char-*.png` and falls back to its own inline SVG characters, so it renders even with none of these files present.
+- Hero / background / explicitly generated section images: **WebP, PNG, or JPG** (raster), because these styles need photographic/painterly/pixel texture.
+- `creative-bold/` and `poetic-ethereal/` are **clean (no watermark)** and come from the user's reference portfolios (`portfolio-fluid-preview` and `portfolio-poem`); they pair with the buildable samples `examples/creative-bold-portfolio.html` and `examples/poetic-ethereal-portfolio.html`.
+- `flat/hero.png` and `flat/about.png` are 即梦(jimeng)-generated PNGs and **carry a visible "即梦AI / AI生成" watermark**. They are usable offline fallbacks, but a site that needs a clean look should regenerate from the per-style prompt (with a capable model) or have the user supply un-watermarked images under the same slot names.
+- `examples/flat-portfolio.html` is independent of this library: it references `generated-images/char-*.png` and falls back to its own inline SVG characters, so it renders even with none of these files present. The `creative-bold` and `poetic-ethereal` samples instead reference these bundled assets directly (`../assets/<style>/…`).
+- `examples/ai-pixel-portfolio.html` is independent of this library: it uses CSS pixel placeholders so the style can render even without loading the bitmap fallback. Production sites may use `assets/ai-pixel/hero.png`, `hero-mobile.png`, and `background.png` for site-level atmosphere.
 
 ## Provenance
 
-Every populated asset must be safe to ship: no real person, no real logo/company mark, no readable proprietary text. Generated fallbacks should use the exact per-style prompt from `style-library.md` (recorded next to the file or in this manifest) so they can be regenerated. **Watermark note:** the bundled PNGs were produced with 即梦 and retain its watermark — replace them with un-watermarked versions before using on a production site.
+Every populated asset must be safe to ship: no real person, no real logo/company mark, no readable proprietary text. Generated fallbacks should use the exact per-style prompt from `style-library.md` (recorded next to the file or in this manifest) or a checked-in generator script so they can be regenerated. **Watermark note:** only the `flat/` PNGs retain the 即梦 watermark — replace them with un-watermarked versions before using on a production site. `creative-bold/`, `poetic-ethereal/`, and `ai-pixel/` are already clean. The AI Pixel procedural assets are generated by `../scripts/generate-ai-pixel-assets.mjs`.
